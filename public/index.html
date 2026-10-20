@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>VoiceSales AI</title><style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f6fa;--cd:#fff;--tx:#1b1f2a;--mu:#6b7280;--bd:#e3e6ee;--ac:#4f46e5;--ok:#16a34a;--rd:#dc2626;--am:#d97706}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1117;--cd:#181b25;--tx:#e8eaf0;--mu:#9aa1b2;--bd:#2a2f3d;--ac:#818cf8}}
+:root[data-theme=dark]{--bg:#0f1117;--cd:#181b25;--tx:#e8eaf0;--mu:#9aa1b2;--bd:#2a2f3d;--ac:#818cf8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:14px 20px;border-bottom:1px solid var(--bd);background:var(--cd);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+h1{font-size:17px;margin:0}h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu)}
+main{display:grid;grid-template-columns:260px 1fr 280px;gap:14px;padding:14px;max-width:1300px;margin:auto}
+@media(max-width:960px){main{grid-template-columns:1fr}}
+.c{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:14px;min-width:0}
+.row{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:99px;border:1px solid var(--bd);font-size:12px;font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mu)}.on .dot{background:var(--rd);animation:p 1s infinite}@keyframes p{50%{opacity:.3}}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);padding:8px 14px}
+.go{width:100%;background:var(--ok);color:#fff;border:0;font-weight:700;padding:12px;font-size:15px}.go.end{background:var(--rd)}button:disabled{opacity:.5;cursor:not-allowed}
+#tr{height:430px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.m{max-width:85%;padding:8px 12px;border-radius:12px;border:1px solid var(--bd)}.m small{display:block;color:var(--mu);font-size:11px;margin-bottom:2px}
+.m.ai{background:color-mix(in srgb,var(--ac) 10%,transparent)}.m.cu{align-self:flex-end}.m.live{opacity:.6;font-style:italic}
+.st{display:flex;flex-direction:column;gap:3px}.st div{color:var(--mu)}.st .d{color:var(--ok)}.st .n{color:var(--tx);font-weight:700}
+.err{background:color-mix(in srgb,var(--rd) 12%,transparent);border:1px solid var(--rd);padding:8px 12px;border-radius:8px;margin:8px 0}
+.em{color:var(--mu);text-align:center;margin:auto}ul{margin:2px 0 8px;padding-left:18px}
+.ov[hidden]{display:none}.ov{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;z-index:9;padding:16px}.ov .c{max-width:420px}
+.h{margin:8px 0;border:1px solid var(--bd);border-radius:10px;padding:10px}summary{cursor:pointer;font-weight:600}
+textarea{width:100%;height:180px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;font:12px monospace}select{font:inherit;padding:6px;border-radius:8px;background:var(--cd);color:var(--tx);border:1px solid var(--bd)}
+.sec{max-width:1300px;margin:0 auto;padding:0 14px 30px}
+</style></head><body>
+<header><h1>VoiceSales AI <span style="color:var(--mu);font-weight:400">· AI Sales Representative</span></h1><div><select id="lang"><option value="en-IN">English</option><option value="hi-IN">Hindi (beta)</option></select></div></header>
+<main>
+<section class="c"><h3>Call</h3>
+<div class="row"><span>Status</span><span class="pill" id="stt"><span class="dot"></span><span id="sv">IDLE</span></span></div>
+<div class="row"><span>Duration</span><b id="du">00:00</b></div>
+<div class="row"><span>Recording</span><span class="pill" id="rc"><span class="dot"></span><span id="rv">OFF</span></span></div>
+<div class="row"><span>Microphone</span><span id="mic">Not connected</span></div>
+<div class="row"><span>Connection</span><span id="cn">Ready</span></div>
+<button class="go" id="go">START CALL</button><div id="er"></div>
+<h3 style="margin-top:16px">Sales stage</h3><div class="st" id="stg"></div></section>
+<section class="c"><h3>Live conversation</h3><div id="tr"><div class="em">Press Start Call to talk to the sales rep. Your words and the AI’s replies appear here live.</div></div></section>
+<section class="c"><h3>Customer intelligence</h3><div id="intel"><div class="em">Insights appear once the call begins.</div></div></section>
+</main>
+<div class="sec"><div class="c"><h3>Latest call result</h3><div id="res"><div class="em">No completed call yet.</div></div></div>
+<div class="c" style="margin-top:14px"><h3>Call history</h3><div id="his"></div></div>
+<details class="c" style="margin-top:14px"><summary>Product configuration (source of truth for the sales engine)</summary><textarea id="cfg" spellcheck="false"></textarea><p><button id="sv2">Save configuration</button> <span id="cm"></span></p></details>
+<p style="color:var(--mu);font-size:12px">Recording captures the customer’s microphone only. Browser text-to-speech (the AI voice) cannot be captured, so the transcript is the full record of the AI side. Speech recognition needs Chrome, Edge or Safari. History is stored in this browser.</p></div>
+<div class="ov" id="ov" hidden><div class="c"><h3>Recording consent</h3><p>This call may be recorded for quality and sales analysis. Do you consent to recording?</p><div style="display:flex;gap:8px"><button class="go" id="acc">Accept</button><button class="go end" id="dec">Decline</button></div></div></div>
+<script>
+const $=i=>document.getElementById(i),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DEF={name:"FlowPilot AI",description:"AI-powered workflow automation platform for growing teams.",target_audience:"Operations, product and agency teams of 10-500 people still using spreadsheets, email and chat to run processes.",features:["Visual workflow automation builder","Task management with owners and due dates","Multi-step approval workflows","Team dashboards","Analytics and bottleneck reports","AI workflow assistant that drafts workflows from plain-English descriptions"],benefits:["Fewer manual handoffs","Faster approvals","One place to see who is doing what"],pricing:{Starter:"$12 per user/month, up to 10 users",Growth:"$29 per user/month, adds approvals and analytics",Enterprise:"Custom pricing, SSO and priority support"},differentiators:["Describe a workflow in plain English and the AI builds a draft","Setup in days, not months"],integrations:["Slack","Email","Google Workspace","Microsoft Teams"],faqs:[{q:"Is there a free trial?",a:"Yes, a 14-day free trial, no credit card needed."},{q:"Can we import from spreadsheets?",a:"Yes, CSV import is supported."}],limitations:["No native mobile app yet (mobile web works)","Custom integrations beyond the list need API work"],common_objections:["Too expensive","Already use another tool","Migration effort","Need manager approval"],cta:"Book a 20-minute live demo"};
+const STAGES=['Greeting','Discovery','Qualification','Product Fit','Objections','Closing'];
+const STAT=['Converted','Interested','Follow-up Required','Not Interested','Demo Requested','No Response'];
+let CFG=DEF;try{CFG=JSON.parse(localStorage.getItem('cfg'))||DEF}catch(e){}
+$('cfg').value=JSON.stringify(CFG,null,2);
+let call=null,S=null,msgs=[],rec=null,chunks=[],recog=null,tmr=null,t0=0,busy=false,silence=0,stream=null,live=null,recOK=false;
+const fresh=()=>({customer_name:'',company:'',role:'',team_size:'',current_solution:'',pain_points:[],requirements:[],budget:'',timeline:'',objections:[],customer_questions:[],buying_signals:[],interest_level:'Unknown',sales_stage:'Greeting',next_best_action:'Greet and ask permission to ask a few questions'});
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function setS(s){call.status=s;$('sv').textContent=s;$('stt').style.borderColor=s=='ERROR'?'var(--rd)':s=='AI_SPEAKING'?'var(--ac)':s=='CUSTOMER_SPEAKING'?'var(--ok)':'var(--bd)'}
+function err(m){$('er').innerHTML=m?'<div class="err">'+esc(m)+'</div>':''}
+const fmt=ms=>{const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+const ts=()=>new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+function draw(){const t=$('tr');if(!msgs.length&&!live){return}t.innerHTML=msgs.map(m=>'<div class="m '+(m.who=='AI'?'ai':'cu')+'"><small>'+(m.who=='AI'?'AI Sales Rep':'Customer')+' · '+m.t+'</small>'+esc(m.text)+'</div>').join('')+(live?'<div class="m cu live"><small>Customer · speaking…</small>'+esc(live)+'</div>':'');t.scrollTop=t.scrollHeight}
+function intel(){const l=(a)=>a.length?'<ul>'+a.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<div style="color:var(--mu)">—</div>';
+$('intel').innerHTML='<b>Interest:</b> '+esc(S.interest_level)+'<br><b>Pain points</b>'+l(S.pain_points)+'<b>Requirements</b>'+l(S.requirements)+'<b>Objections</b>'+l(S.objections)+'<b>Next best action</b><div>'+esc(S.next_best_action)+'</div><p style="color:var(--mu);font-size:12px">'+[S.customer_name,S.role,S.company,S.team_size&&S.team_size+' people',S.current_solution&&'uses '+S.current_solution].filter(Boolean).map(esc).join(' · ')+'</p>';
+const i=Math.max(0,STAGES.indexOf(S.sales_stage));$('stg').innerHTML=STAGES.map((s,k)=>'<div class="'+(k<i?'d':k==i?'n':'')+'">'+(k<i?'✓':k==i?'●':'○')+' '+s+'</div>').join('')}
+const SYS=()=>`You are a consultative voice sales rep for the SaaS product below. The product JSON is the ONLY source of truth: never invent features, prices, integrations, guarantees or customer results. If asked something not covered, say you are not sure and offer to have a specialist follow up. Flow: greeting, permission, discovery, pain points, qualification, product fit, value, objection handling, CTA, close. Do not dump features; ask one smart question at a time; never repeat a question already answered (see state). Acknowledge objections empathetically, never argue. If the customer clearly refuses, thank them politely and end. Spoken replies: 1-3 short natural sentences, no lists, no markdown. Reply language: ${$('lang').value=='hi-IN'?'Hindi (Devanagari)':'English'}.
+PRODUCT: ${JSON.stringify(CFG)}
+Return ONLY JSON: {"say":"what you speak","end_call":false,"state":{full updated state object with same keys; sales_stage one of ${STAGES.join('|')}; interest_level Low|Medium|High; next_best_action short business-level}}`;
+async function llm(prompt){
+let r;try{const x=await fetch('/api/llm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});r=await x.json();if(!x.ok)throw new Error(r.error||('HTTP '+x.status))}catch(e){throw new Error('AI request failed: '+e.message)}
+const m=(r.text||'').match(/\{[\s\S]*\}/);if(!m)throw new Error('AI returned a malformed response.');try{return JSON.parse(m[0])}catch(e){throw new Error('AI returned malformed JSON.')}}
+const conv=()=>msgs.map(m=>(m.who=='AI'?'AI: ':'Customer: ')+m.text).join('\n')||'(call just connected)';
+async function aiTurn(note){if(busy)return;busy=true;try{
+const j=await llm(SYS()+'\nSTATE: '+JSON.stringify(S)+'\nTRANSCRIPT:\n'+conv()+(note?'\nNOTE: '+note:'')+'\nNow produce your next turn.');
+if(j.state&&typeof j.state=='object')S={...S,...j.state};intel();
+msgs.push({who:'AI',text:String(j.say||'Sorry, could you repeat that?'),t:ts()});draw();busy=false;
+speak(msgs[msgs.length-1].text,!!j.end_call)}catch(e){busy=false;fail(e.message)}}
+function fail(m){err(m);if(call&&call.status!='COMPLETED'){setS('ERROR');$('cn').textContent='Error';stopAll();$('go').textContent='END CALL'}}
+function speak(text,end){if(!call||call.status=='ENDING'||call.status=='COMPLETED')return;
+if(!window.speechSynthesis){err('Speech synthesis unavailable; reading the reply as text only.');return end?endCall():listen()}
+try{recog&&recog.abort()}catch(e){}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=$('lang').value;
+const v=speechSynthesis.getVoices().find(x=>x.lang.replace('_','-').startsWith(u.lang.slice(0,2)));if(v)u.voice=v;
+u.onstart=()=>setS('AI_SPEAKING');u.onend=u.onerror=()=>{if(end)endCall();else if(call&&call.status!='ENDING')listen()};speechSynthesis.speak(u)}
+function listen(){if(!call||['ENDING','COMPLETED','ERROR'].includes(call.status))return;setS('IN_CALL');
+recog=new SR();recog.lang=$('lang').value;recog.interimResults=true;let fin='';
+recog.onspeechstart=()=>setS('CUSTOMER_SPEAKING');
+recog.onresult=e=>{let i='';fin='';for(const r of e.results){(r.isFinal?(fin+=r[0].transcript):(i+=r[0].transcript))}live=(fin+i).trim();draw()};
+recog.onerror=e=>{if(e.error=='not-allowed'||e.error=='service-not-allowed'){fail('Microphone or speech recognition permission denied.')}else if(e.error=='network'){fail('Speech recognition network error. Check your connection.')}};
+recog.onend=()=>{live=null;if(!call||['ENDING','COMPLETED','ERROR'].includes(call.status))return;fin=fin.trim();
+if(fin){silence=0;msgs.push({who:'Customer',text:fin,t:ts()});draw();aiTurn()}
+else{silence++;if(silence==1){aiTurn('The customer was silent. Gently check if they are still there.')}else if(silence>=3){endCall()}else listen()}};
+try{recog.start()}catch(e){fail('Could not start speech recognition.')}}
+function stopAll(){try{recog&&recog.abort()}catch(e){}speechSynthesis&&speechSynthesis.cancel();clearInterval(tmr)}
+function startRec(){try{rec=new MediaRecorder(stream);chunks=[];rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);rec.start(1000);recOK=true;$('rv').textContent='ON';$('rc').classList.add('on')}catch(e){recOK=false;err('Recording could not start: '+e.message+'. The call continues without recording.')}}
+$('go').onclick=()=>{if(call&&!['COMPLETED'].includes(call.status)){return endCall()}
+err('');if(!SR)return err('This browser has no speech recognition. Please use Chrome, Edge or Safari.');
+if(!navigator.mediaDevices)return err('Microphone access needs a secure (HTTPS) page.');
+call={id:'call_'+Date.now().toString(36),status:'CONNECTING',started:Date.now()};setS('CONNECTING');$('ov').hidden=false;$('go').disabled=true};
+async function begin(consent){$('ov').hidden=true;$('go').disabled=false;
+try{stream=await navigator.mediaDevices.getUserMedia({audio:true});$('mic').textContent='Active'}catch(e){call=null;$('sv').textContent='ERROR';$('mic').textContent='Blocked';return err('Microphone access was denied. Allow it in the browser and try again.')}
+$('cn').textContent='Connected';S=fresh();msgs=[];silence=0;recOK=false;call.consent=consent;draw();intel();$('tr').innerHTML='';
+if(consent)startRec();$('go').textContent='END CALL';$('go').className='go end';t0=Date.now();tmr=setInterval(()=>$('du').textContent=fmt(Date.now()-t0),500);aiTurn()}
+$('acc').onclick=()=>begin(true);$('dec').onclick=()=>begin(false);
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('vs',1);r.onupgradeneeded=()=>r.result.createObjectStore('rec');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function putRec(id,b){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction('rec','readwrite');t.objectStore('rec').put(b,id);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+async function getRec(id){const d=await idb();return new Promise((res,rej)=>{const r=d.transaction('rec').objectStore('rec').get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function endCall(){if(!call||['ENDING','COMPLETED'].includes(call.status))return;const wasErr=call.status=='ERROR';setS('ENDING');stopAll();const dur=Date.now()-t0;
+try{stream&&stream.getTracks().forEach(t=>t.stop())}catch(e){}$('mic').textContent='Off';$('rc').classList.remove('on');
+let blob=null;if(rec&&rec.state!='inactive'){await new Promise(r=>{rec.onstop=r;rec.stop()});if(chunks.length)blob=new Blob(chunks,{type:rec.mimeType||'audio/webm'})}
+let hasRec=false;if(blob){try{await putRec(call.id,blob);hasRec=true}catch(e){err('Recording could not be saved: '+e.message)}}
+$('rv').textContent=hasRec?'SAVED':'OFF';$('go').disabled=true;$('go').textContent='ANALYZING…';
+const cust=msgs.filter(m=>m.who=='Customer').length;let a;
+if(!cust){a={summary:'The customer did not respond during the call.',customer_requirements:[],pain_points:[],objections:[],questions:[],buying_signals:[],interest_level:'None',qualification_score:0,sales_stage:S?S.sales_stage:'Greeting',sales_status:'No Response',reason_for_status:'No customer speech was captured.',next_action:'Retry the call later.',confidence:1}}
+else{try{a=await llm('Analyze this sales call transcript. Ground EVERYTHING strictly in the transcript; never invent facts. Product: '+CFG.name+'.\nTRANSCRIPT:\n'+conv()+'\nReturn ONLY JSON with keys: summary (2-3 sentences), customer_requirements[], pain_points[], objections[], questions[], buying_signals[], interest_level (Low|Medium|High), qualification_score (0-100), sales_stage, sales_status (exactly one of '+STAT.join(' | ')+'), reason_for_status, next_action, confidence (0-1).');if(!STAT.includes(a.sales_status))a.sales_status='Follow-up Required'}
+catch(e){err('Post-call analysis failed: '+e.message+' The transcript was saved without analysis.');a=null}}
+const rowd={id:call.id,at:new Date().toISOString(),customer:S&&S.customer_name||'Unknown customer',duration:fmt(dur),consent:call.consent,hasRec,msgs,analysis:a};
+try{const h=JSON.parse(localStorage.getItem('hist')||'[]');h.unshift(rowd);localStorage.setItem('hist',JSON.stringify(h.slice(0,30)))}catch(e){err('History could not be saved: '+e.message)}
+setS('COMPLETED');$('go').disabled=false;$('go').textContent='START CALL';$('go').className='go';$('cn').textContent='Ready';
+$('res').innerHTML=card(rowd,true);call=null;hist();wire()}
+function li(a){return a&&a.length?'<ul>'+a.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<div style="color:var(--mu)">None</div>'}
+function card(c,open){const a=c.analysis;return '<div class="h"><b>'+esc(c.customer)+'</b> · '+new Date(c.at).toLocaleString()+' · '+c.duration+(a?' · <span class="pill">'+esc(a.sales_status)+'</span> · Score '+esc(a.qualification_score)+'/100':' · <span class="pill">Analysis unavailable</span>')+
+(a?'<p>'+esc(a.summary)+'</p><b>Reason:</b> '+esc(a.reason_for_status)+'<br><b>Next step:</b> '+esc(a.next_action)+'<br><b>Interest:</b> '+esc(a.interest_level)+' · <b>Stage:</b> '+esc(a.sales_stage)+'<br><b>Requirements</b>'+li(a.customer_requirements)+'<b>Pain points</b>'+li(a.pain_points)+'<b>Objections</b>'+li(a.objections)+'<b>Questions</b>'+li(a.questions)+'<b>Buying signals</b>'+li(a.buying_signals):'')+
+'<details'+(open?' open':'')+'><summary>Transcript ('+c.msgs.length+' messages)</summary>'+c.msgs.map(m=>'<div><b>'+m.who+'</b> '+m.t+': '+esc(m.text)+'</div>').join('')+'</details>'+
+'<div style="margin-top:6px">'+(c.hasRec?'<audio controls data-rec="'+c.id+'"></audio>':'<span style="color:var(--mu)">'+(c.consent?'Recording unavailable':'Recording declined — none stored')+'</span>')+'</div></div>'}
+function hist(){let h=[];try{h=JSON.parse(localStorage.getItem('hist')||'[]')}catch(e){}$('his').innerHTML=h.length?h.map(c=>card(c,false)).join(''):'<div class="em">No calls yet.</div>';wire()}
+function wire(){document.querySelectorAll('audio[data-rec]').forEach(async a=>{if(a.src)return;try{const b=await getRec(a.dataset.rec);if(b)a.src=URL.createObjectURL(b);else a.outerHTML='<span>Recording not found</span>'}catch(e){a.outerHTML='<span>Recording failed to load</span>'}})}
+$('sv2').onclick=()=>{try{const j=JSON.parse($('cfg').value);if(!j.name||!j.description||!Array.isArray(j.features)||!j.pricing||!j.cta)throw new Error('needs name, description, features[], pricing, cta');CFG=j;localStorage.setItem('cfg',JSON.stringify(j));$('cm').textContent='Saved. Next call sells '+j.name+'.'}catch(e){$('cm').textContent='Invalid configuration: '+e.message}};
+window.addEventListener('beforeunload',()=>{try{stream&&stream.getTracks().forEach(t=>t.stop())}catch(e){}});
+$('stg').innerHTML=STAGES.map(s=>'<div>○ '+s+'</div>').join('');hist();
+</script></body></html>

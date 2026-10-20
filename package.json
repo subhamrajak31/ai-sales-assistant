@@ -1,0 +1,12 @@
+{
+  "name": "voicesales-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node --dns-result-order=ipv4first server.js",
+    "diagnose": "node --dns-result-order=ipv4first diagnose.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
